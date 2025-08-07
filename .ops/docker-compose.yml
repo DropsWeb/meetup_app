@@ -1,0 +1,19 @@
+version: "3.8"
+
+networks:
+  todonet:
+    driver: bridge
+
+services:
+  go_app:
+    build:
+      context: ../
+      dockerfile: .ops/Dockerfile
+    container_name: app
+    ports:
+      - "80:80"
+    networks:
+      - todonet
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
