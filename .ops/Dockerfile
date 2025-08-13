@@ -1,6 +1,6 @@
 FROM golang:1.23.0
 
-COPY . /builds
+COPY ../ /builds
 
 WORKDIR /builds/cmd/app
 
