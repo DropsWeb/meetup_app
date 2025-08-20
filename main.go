@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -12,7 +13,8 @@ func main() {
 	})
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
 		// Write "Hello, World!" to the response writer
-		fmt.Fprintf(w, "Application is up")
+		hostname := GetLocalIP()
+		fmt.Fprintf(w, "Application is up, host is: %v\n", hostname)
 	})
 
 	// Start the HTTP server and listen on port 8080
@@ -22,4 +24,19 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error starting server: %s\n", err)
 	}
+}
+func GetLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	for _, address := range addrs {
+		// check the address type and if it is not a loopback the display it
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
 }
