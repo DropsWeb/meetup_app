@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -13,6 +14,7 @@ func main() {
 	})
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
 		// Write "Hello, World!" to the response writer
+		time.Sleep(1 * time.Second)
 		hostname := GetLocalIP()
 		fmt.Fprintf(w, "Application is up, host is: %v\n", hostname)
 		fmt.Printf("Application is up, host is: %v\n", hostname)
