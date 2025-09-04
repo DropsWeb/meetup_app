@@ -15,6 +15,7 @@ func main() {
 		// Write "Hello, World!" to the response writer
 		hostname := GetLocalIP()
 		fmt.Fprintf(w, "Application is up, host is: %v\n", hostname)
+		fmt.Printf("Application is up, host is: %v\n", hostname)
 	})
 
 	// Start the HTTP server and listen on port 8080
@@ -34,6 +35,7 @@ func GetLocalIP() string {
 		// check the address type and if it is not a loopback the display it
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
+				fmt.Println(ipnet.IP.String())
 				return ipnet.IP.String()
 			}
 		}
