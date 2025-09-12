@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -15,9 +18,17 @@ func main() {
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
 		// Write "Hello, World!" to the response writer
 		time.Sleep(1 * time.Second)
-		hostname := GetLocalIP()
-		fmt.Fprintf(w, "Application is up, host is: %v\n", hostname)
-		fmt.Printf("Application is up, host is: %v\n", hostname)
+		result, err := readFromDatabase()
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+		}
+
+		w.WriteHeader(http.StatusOK)
+
+		fmt.Fprintf(w, "%v\n", result)
+		fmt.Printf("%v\n", result)
 	})
 
 	// Start the HTTP server and listen on port 8080
@@ -43,4 +54,35 @@ func GetLocalIP() string {
 		}
 	}
 	return ""
+}
+
+func readFromDatabase() (string, error) {
+	rand.Seed(time.Now().UnixNano())
+
+	filename := fmt.Sprintf("%d.txt", rand.Intn(100000))
+
+	f, err := os.Create(filename)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer f.Close()
+
+	val := fmt.Sprintf("Результат чтения из БД. IP ноды приложения: %s", GetLocalIP())
+
+	if _, err := f.WriteString(val); err != nil {
+		return "", err
+	}
+
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return "", err
+	}
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
 }
