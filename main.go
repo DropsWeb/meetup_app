@@ -60,10 +60,10 @@ func GetLocalIP() string {
 }
 
 func mathBigHash() string {
-	const iteration = 5000
+	const iteration = 50000
 
 	x := 0
-	for i := 0; i < 5000; i++ {
+	for i := 0; i < iteration; i++ {
 		x += (i * 31) ^ (i >> 3)
 	}
 
