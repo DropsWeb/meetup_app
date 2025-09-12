@@ -18,6 +18,9 @@ func main() {
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
 		// Write "Hello, World!" to the response writer
 		time.Sleep(1 * time.Second)
+
+		hash := mathBigHash()
+
 		result, err := readFromDatabase()
 
 		if err != nil {
@@ -27,8 +30,8 @@ func main() {
 
 		w.WriteHeader(http.StatusOK)
 
-		fmt.Fprintf(w, "%v\n", result)
-		fmt.Printf("%v\n", result)
+		fmt.Fprintf(w, "%v,%v\n", hash, result)
+		fmt.Printf("%v,%v\n", hash, result)
 	})
 
 	// Start the HTTP server and listen on port 8080
@@ -54,6 +57,19 @@ func GetLocalIP() string {
 		}
 	}
 	return ""
+}
+
+func mathBigHash() string {
+	const iteration = 5000
+
+	x := 0
+	for i := 0; i < 5000; i++ {
+		x += (i * 31) ^ (i >> 3)
+	}
+
+	_ = x
+
+	return "Good"
 }
 
 func readFromDatabase() (string, error) {
