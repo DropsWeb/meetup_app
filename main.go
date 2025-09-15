@@ -17,7 +17,7 @@ func main() {
 	})
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
 		// Write "Hello, World!" to the response writer
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 
 		hash := mathBigHash()
 
@@ -60,7 +60,7 @@ func GetLocalIP() string {
 }
 
 func mathBigHash() string {
-	const iteration = 50000
+	const iteration = 500000
 
 	x := 0
 	for i := 0; i < iteration; i++ {
