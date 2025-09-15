@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"math"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"sync"
 	"time"
 )
 
@@ -22,23 +22,22 @@ func main() {
 		cores := runtime.NumCPU()
 		runtime.GOMAXPROCS(cores)
 
-		var wg sync.WaitGroup
-		wg.Add(cores)
+		ctx, cancel := context.WithTimeout(r.Context(), 2500*time.Millisecond)
+		defer cancel()
 
-		for c := 0; c < cores; c++ {
-			go func() {
-				defer wg.Done()
-				for i := 0; i < 10; i++ {
-					res := mathHeavy(10_000_000)
-					// Используем результат, чтобы компилятор не выкинул
-					if res == 0 {
-						fmt.Println("Impossible")
-					}
-				}
-			}()
+		done := make(chan float64, 1)
+
+		go func() {
+			res := mathHeavy(10_000_000) // грузим CPU
+			done <- res
+		}()
+
+		select {
+		case <-ctx.Done():
+			http.Error(w, "Слишком большая нагрузка", http.StatusInternalServerError)
+		case res := <-done:
+			fmt.Fprintf(w, "Результат: %f", res)
 		}
-
-		wg.Wait()
 
 		result, err := readFromDatabase()
 
