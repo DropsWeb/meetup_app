@@ -21,8 +21,6 @@ func main() {
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
 		cores := runtime.NumCPU()
 		runtime.GOMAXPROCS(cores)
-		// Write "Hello, World!" to the response writer
-		time.Sleep(2 * time.Second)
 
 		var wg sync.WaitGroup
 		wg.Add(cores)
