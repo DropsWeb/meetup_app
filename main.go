@@ -28,30 +28,27 @@ func main() {
 		done := make(chan float64, 1)
 
 		go func() {
-			res := mathHeavy(10_000_000) // грузим CPU
+			res := mathHeavy(10_000_000)
 			done <- res
 		}()
 
 		select {
 		case <-ctx.Done():
 			http.Error(w, "Слишком большая нагрузка", http.StatusInternalServerError)
+			return
 		case res := <-done:
-			fmt.Fprintf(w, "Результат: %f", res)
+			fmt.Fprintf(w, "Результат вычислений: %f\n", res)
 		}
 
+		// Работа с базой
 		result, err := readFromDatabase()
-
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
-			fmt.Println(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-
-		fmt.Fprintf(w, "%v\n", result)
+		fmt.Fprintf(w, "Результат из БД: %v\n", result)
 	})
-
 	// Start the HTTP server and listen on port 8080
 	// http.ListenAndServe blocks until the program is terminated
 	fmt.Println("Server listening on :80")
