@@ -28,7 +28,7 @@ func main() {
 		done := make(chan float64, 1)
 
 		go func() {
-			res := mathHeavy(500_000)
+			res := mathHeavy(1_000_000)
 			done <- res
 		}()
 
