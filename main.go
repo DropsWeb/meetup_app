@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"net"
 	"net/http"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -16,22 +19,40 @@ func main() {
 		fmt.Fprintf(w, "Hello, World!")
 	})
 	http.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) {
+		cores := runtime.NumCPU()
+		runtime.GOMAXPROCS(cores)
 		// Write "Hello, World!" to the response writer
 		time.Sleep(2 * time.Second)
 
-		hash := mathBigHash()
+		var wg sync.WaitGroup
+		wg.Add(cores)
+
+		for c := 0; c < cores; c++ {
+			go func() {
+				defer wg.Done()
+				for i := 0; i < 10; i++ {
+					res := mathHeavy(10_000_000)
+					// Используем результат, чтобы компилятор не выкинул
+					if res == 0 {
+						fmt.Println("Impossible")
+					}
+				}
+			}()
+		}
+
+		wg.Wait()
 
 		result, err := readFromDatabase()
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
+			fmt.Println(err.Error())
 		}
 
 		w.WriteHeader(http.StatusOK)
 
-		fmt.Fprintf(w, "%v,%v\n", hash, result)
-		fmt.Printf("%v,%v\n", hash, result)
+		fmt.Fprintf(w, "%v\n", result)
 	})
 
 	// Start the HTTP server and listen on port 8080
@@ -59,17 +80,12 @@ func GetLocalIP() string {
 	return ""
 }
 
-func mathBigHash() string {
-	const iteration = 500000
-
-	x := 0
-	for i := 0; i < iteration; i++ {
-		x += (i * 31) ^ (i >> 3)
+func mathHeavy(iter int) float64 {
+	result := 0.0
+	for i := 1; i <= iter; i++ {
+		result += math.Sqrt(float64(i)) * math.Sin(float64(i))
 	}
-
-	_ = x
-
-	return "Good"
+	return result
 }
 
 func readFromDatabase() (string, error) {
